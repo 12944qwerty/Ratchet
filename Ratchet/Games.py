@@ -12,8 +12,9 @@ class Games(c.Cog):
 	def __init__(self,bot):
 		self.bot = bot
 	
+	@c.guild_only()
 	@bot_has_permissions(manage_messages=True)
-	@c.command(name='tic-tac-toe',aliases=['tic tac toe'])
+	@c.command(name='tic-tac-toe',aliases=['tic tac toe'],hidden=True)
 	async def tictactoe(self,ctx):
 		"""Play TicTacToe!"""
 		em = d.Embed(title='Tic-Tac-Toe')
@@ -33,15 +34,15 @@ class Games(c.Cog):
 		pone = ctx.author
 		ptwo = user
 		em.set_field_at(1,value=user.display_name)
-		em.add_field(name='Turn ',value='It is currently pone\'s turn')
+		em.add_field(name='Turn ',value='It is currently p1\'s turn')
 		await game.edit(embed=em)
 		
-
+	@c.guild_only()
 	@bot_has_permissions(manage_messages=True)
 	@c.command(name='hangman')
 	async def hangman(self,ctx):
 		"""Play hangman! 6 misses max!"""
-		misses = []
+		misses = ['0']
 		em = d.Embed(title='Hangman!')
 		em.add_field(name='Word!',value='_',inline=True)
 		em.add_field(name='Misses ',value='0')
@@ -51,7 +52,7 @@ class Games(c.Cog):
 		await game.add_reaction('\U0001f579')
 
 		def check(reaction, user):
-			return (str(reaction.emoji) == '\U0001f579')
+			return (str(reaction.emoji) == '\U0001f579') and user != self.bot.user
 		try:
 			reaction, user = await self.bot.wait_for('reaction_add', timeout=60.0,check=check)
 			await game.remove_reaction('\U0001f579',user)
@@ -73,6 +74,7 @@ class Games(c.Cog):
 				return message.channel == pone.dm_channel and len(message.content) > 0 and message.author != self.bot.user
 			message = await self.bot.wait_for('message',check=chec)
 			word = message.content
+			words = word
 			i = len(word)
 			word = list(word)
 			space='|\_| '
@@ -96,12 +98,16 @@ class Games(c.Cog):
 				reaction, user = await self.bot.wait_for('reaction_add',timeout=180.0,check=check_letter)
 				if reaction.emoji in alphabet1: #removes reaction
 					await game.remove_reaction(reaction.emoji,user)
+					await game.remove_reaction(reaction.emoji,self.bot.user)
 					react = alphabet1[reaction.emoji]
 				else:
 					await waiting.remove_reaction(reaction.emoji,user)
+					await game.remove_reaction(reaction.emoji,self.bot.user)
 					react = alphabet2[reaction.emoji]
 				if react not in word:
-					misses.append('react')
+					if misses[0] == '0':
+						del misses[0]
+					misses.append(react)
 				while react in word:
 					index_l = word.index(react) #get index of letter to replace in the `space` list
 					word[index_l] = 'GUESSED' #workaround
@@ -111,7 +117,7 @@ class Games(c.Cog):
 				em.set_field_at(1,name='Misses!',value=', '.join(misses))
 				await game.edit(embed=em)
 				if len(misses) > 6: #win / lose
-					playing = False 
+					playing = False
 					winner = pone
 					loser = ptwo
 				win = 0
@@ -124,6 +130,7 @@ class Games(c.Cog):
 					loser = pone.mention
 				
 			await ctx.send('{} has won! \n{} has lost!'.format(winner, loser))
+			await ctx.send(f'The word was `{words}`')
 		except a.TimeoutError:
 			await ctx.send('This game timed out.')
 
