@@ -7,26 +7,95 @@ from discord.ext import commands as c
 import os
 from random import randint
 import jishaku
+import sqlite3 as sql
+
+conn = sql.connect('Ratchet.db')
+crsr = conn.cursor()
 
 token = os.environ.get('TOKEN')
 
-client = Bot(command_prefix='?R ')
+def get_prefix(bot,msg):
+	try:
+		crsr.execute('SELECT prefix FROM guilds WHERE guild_id=?',(msg.guild.id,))
+		idk = crsr.fetchone()
+		if idk is None or idk[0] is None:
+			return '?R '
+		return (idk[0], '?R ')
+		crsr.commit()
+	except AttributeError:
+		return '?R '
 
-cogs = ['Bot','Moderation','ID','Games','Miscellaneous','jishaku']
+client = Bot(command_prefix=get_prefix)
 
 @client.event
 async def on_ready():
 	for cog in cogs:
 		client.load_extension(cog)
-	await client.change_presence(activity=d.Activity(name='?R help',type='3'))
+	if input('reset tables? ') == 'y':
+		try:
+			crsr.execute('DROP TABLE guilds;')
+			conn.commit
+		except sql.OperationalError:
+			pass
+		try:
+			crsr.execute('DROP TABLE users;')
+			conn.commit
+		except sql.OperationalError:
+			pass
+		crsr.execute('CREATE TABLE guilds ( \
+			guild_id UNSIGNED BIG integer NOT NULL, \
+			prefix string \
+		);')
+		conn.commit
+		for guild in client.guilds:
+			crsr.execute('INSERT INTO guilds (guild_id, prefix) VALUES (?, ?)', (guild.id, '?R '))
+			conn.commit
+		crsr.execute('UPDATE guilds SET prefix=? WHERE guild_id=?',('&',550722337050198036))
+		crsr.execute('CREATE TABLE users ( \
+			guild_id UNSIGNED BIG INT, \
+			user_id UNSIGNED BIG INT, \
+			xp INT \
+		);')
+		conn.commit()
 	print('Logged in as')
 	print('{0.user}'.format(client))
 	print('Serving', end=' ')
 	print('{} server(s)'.format(len(client.guilds)))
 
+client.crsr = crsr
+client.conn = conn
+cogs = ['Bot','Moderation','Miscellaneous','Games','jishaku']
+	
+@client.event
+async def on_message(message):
+	if not message.author.bot:
+		try:
+			crsr.execute('SELECT xp FROM users WHERE guild_id=? AND user_id=?', (message.guild.id, message.author.id))
+			idk = crsr.fetchone()
+			#await message.channel.send(idk)
+			if idk is None: #user not ranked
+				crsr.execute('INSERT INTO users (guild_id, user_id, xp) VALUES (?, ?, ?)', (message.guild.id, message.author.id, 1))
+			else:
+				crsr.execute('UPDATE users SET xp=? WHERE guild_id=? AND user_id=?', ((idk[0] or 0) + 1, message.guild.id, message.author.id))
+			conn.commit()
+		except AttributeError:
+			pass
+	await client.process_commands(message)
+
+async def activity(*args):
+	print(args)
+	while not client.is_closed():
+		for arg in args:
+			await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=arg))
+			await a.sleep(5)
+			
+
 try:
-    client.loop.run_until_complete(client.start(token))
+	client.loop.run_until_complete(client.start(token))
+	client.loop.run_until_complete(activity('?R ',f'{len(client.guilds)} servers'))
 except KeyboardInterrupt:
-    client.loop.run_until_complete(client.logout())
+	conn.close()
+	client.loop.run_until_complete(client.logout())
 finally:
-    client.loop.close()
+	client.loop.close()
+	conn.close()
