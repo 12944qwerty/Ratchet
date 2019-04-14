@@ -7,15 +7,23 @@ from discord.ext import commands as c
 import os
 from random import randint
 import time
+import sqlite3 as sql
 
 class Moderation(c.Cog):
 	def __init__(self,client):
 		self.bot = client
 	
-	@c.command(name='unban')
+	async def get_admin(self,ctx):
+		for member in ctx.guild:
+			if ctx.channel.permissions_for(member).ban_members and member.status == 'online' or member.status == 'idle':
+				self.admin = member
+				break
+
+	@c.guild_only()
 	@bot_has_permissions(ban_members=True)
 	async def unban(self,ctx,user:d.Member,*,reason=None):
-		if ctx.channel.permissions_for(ctx.author).ban_members:
+		self.get_admin(ctx)
+		if ctx.channel.permissions_for(ctx.author).ban_members and ctx.channel.permissions_for(self.bot.user).ban_members:
 			await user.unban(reason=reason)
 		else:
 			unban = await ctx.send('@everyone, {} has voted for {} to be unbanned. Reason, if any, {}'.format(ctx.author.mention,user.mention,str(reason)))
@@ -32,22 +40,27 @@ class Moderation(c.Cog):
 				else:
 					Nay += 1
 			if Yay > Nay:
-				await ctx.send('@everyone, {} has been unbanned'.format(user.mention))
+				if ctx.channel.permissions_for(self.bot.user).ban_members:
+					await ctx.send('@everyone, {} has been unbanned'.format(user.mention))
+				else:
+					await ctx.send('{}, {} has been voted to be unbanned'.format(self.admin.mention,user.mention))
 				await user.unban(reason=reason)
 			elif Yay < Nay:
 				await ctx.send('@everyone, {} has been voted to stay banned'.format(user.mention))
 			else:
 				await ctx.send('@everyone, the vote against {} has been a tie. He will stay banned!'.format(user.mention))
 	
-	@bot_has_permissions(manage_messages=True,ban_members=True,kick_members=True)
+	@c.guild_only()
+	@bot_has_permissions(ban_members=True)
 	@c.command(name='ban')
-	async def ban(self,ctx,user:d.Member,purge_days:int=13,reason=None):
-		"""Ban someone in the server. Optionally purge a max of 13 days of user's message. Reason is default 'None'"""
-		for member in ctx.guild:
-			if member.status == 'online' or member.status == 'idle' and ctx.channel.permissions_for(member).ban_members:
-				banner = member
+	async def ban(self,ctx,user:d.Member,reason=None):
+		"""Ban someone in the server. Reason is default 'None'"""
+		self.get_admin(ctx)
 		
-		if ctx.author != banner:
+		if ctx.channel.permissions_for(ctx.author).ban_members and ctx.channel.permissions_for(self.bot.user).ban_members:
+			await ctx.guild.ban(user,reason=reason)
+			await ctx.send(f'<@everyone> {user.display_name} has been banned by {ctx.author.display_name}! :wave:')
+		else:
 			await ctx.send('{} has requested for {} to be banned - **{}**!'.format(ctx.author.display_name,user.display_name,reason))
 			vote = await ctx.send('Please vote below! <@everyone>')
 			DOBAN = '\U0001f6ab'
@@ -63,16 +76,17 @@ class Moderation(c.Cog):
 				if reaction.emoji == NOBAN:
 					Nay += 1
 			if Yay > Nay:
-				await ctx.send(f'<@everyone> {user.display_name} has been voted to be banned! :wave:')
-				await ctx.guild.ban(user,reason=reason,delete_message_days=purge_days)
+				if ctx.channel.permissions_for(self.bot.user).ban_members:
+					await ctx.send(f'<@everyone> {user.display_name} has been voted to be banned! :wave:')
+					await ctx.guild.ban(user,reason=reason)
+				else:
+					await ctx.send('{}, {} has been voted to be banned'.format(admin.mention,user.display_name))
 			elif Nay < Yay:
 				await ctx.send(f'<@everyone> {user.display_name} has been voted to not be banned! :laugh:')
 			else:
 				await ctx.send(f'<@everyone> The vote for {user.display_name} has been cancelled for a tie! :laugh:')
-		else:
-			await ctx.guild.ban(user,reason=reason,delete_message_days=purge_days)
-			await ctx.send(f'<@everyone> {user.display_name} has been banned by {ctx.author}! :wave:')
 	
+	@c.guild_only()
 	@c.command()
 	@has_permissions(manage_messages=True, read_message_history=True)
 	@bot_has_permissions(manage_messages=True, read_message_history=True)
@@ -90,12 +104,32 @@ class Moderation(c.Cog):
 					return False
 			return True
 		deleted = await ctx.channel.purge(limit=limit, check=check_msg)
-		msg = await ctx.send(embed=d.Embed(title=('purge'),description=('purged {} messages'.format(len(deleted)))
-		))
-		time.sleep(2)
-		await msg.delete()
+		await ctx.send(embed=d.Embed(title=('purge'),description=('purged {} messages'.format(len(deleted)))
+		),delete_after=2.0)
 
-
+	@c.guild_only()
+	@c.command(name='set_prefix',aliases=['change_prefix',])
+	async def set_prefix(self,ctx,prefix:str):
+		"""Sets prefix of guild!"""
+		self.bot.crsr.execute('UPDATE guilds SET prefix=? WHERE guild_id=?',(prefix,ctx.guild.id))
+		self.bot.conn.commit()
+		self.bot.crsr.execute('SELECT prefix FROM guilds WHERE guild_id=?',(ctx.guild.id,))
+		prefix = self.bot.crsr.fetchone()[0]
+		await ctx.send(f'Prefix changed to {prefix}')
+	
+	@c.guild_only()
+	@c.command(name='prefix',aliases=['pre'])
+	async def prefix(self,ctx):
+		pre = self.bot.crsr.execute('SELECT prefix \
+			FROM guilds \
+			WHERE guild_id=?', (ctx.guild.id,))
+		await ctx.send(f'Prefix is currently {pre}')
+	
+	@c.guild_only()
+	@c.command(name='reset_prefix')
+	async def reset_prefix(self,ctx):
+		self.bot.crsr.execute('UPDATE guilds SET prefix=? WHERE guild_id=?', ('?R ',ctx.guild.id))
+		await ctx.send('Prefix has been reset to `?R `')
 
 def setup(bot):
     bot.add_cog(Moderation(bot))
