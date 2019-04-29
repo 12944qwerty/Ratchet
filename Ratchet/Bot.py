@@ -7,7 +7,6 @@ from discord.ext import commands as c
 import os
 from random import randint
 import datetime
-from pendulum import instance as to_utc, timezone
 
 class Bot(c.Cog):
 	def __init__(self,client):
@@ -45,31 +44,23 @@ class Bot(c.Cog):
 				user += 1
 		await ctx.send('Serving {} users'.format(user))
 
-	@c.command(name='play', aliases=['watch','listen'])
-	@c.is_owner()
-	async def play(self,ctx,media_title: str):
-		"""Update my presence."""
-		p_types = {'play': 0, 'listen': 2, 'watch': 3}
-		my_media = d.Activity(name=media_title, type=p_types[ctx.invoked_with])
-		await self.bot.change_presence(activity=my_media)
-
-	@info.command(name='inv', aliases=['invite_link','invite'])
+	"""@info.command(name='inv', aliases=['invite_link','invite'])
 	async def inv(self,ctx):
 		Want this bot on your server?
-		await ctx.send('Hi! If you would like me to be on your server, please use this link:\n <https://discordapp.com/api/oauth2/authorize?client_id=549642567718010880&permissions=2146958839&scope=bot>')
+		await ctx.send('Hi! If you would like me to be on your server, please use this link:\n <https://discordapp.com/api/oauth2/authorize?client_id=549642567718010880&permissions=2146958839&scope=bot>')"""
 	
 	@c.guild_only()
 	@c.command(name='leave')
 	async def leave(self,ctx):
 		"""LEaves the Guild. ADMIN ONLY"""
-		if ctx.author.id == 499400512559382538 or ctx.author.permissions.administrator:
+		if ctx.author.id == 499400512559382538:
 			await ctx.send('Awww, why don\'t you want me???')
 			await ctx.guild.leave()
 
 	@c.command(name='stop')
 	async def stop(self,ctx):
 		"""Stop the bot. ONLY ADMINS CAN DO SO (and owner)"""
-		if ctx.author.id == 499400512559382538:
+		if ctx.author.id == 499400512559382538 or ctx.author.permissions.administrator:
 			msg = await ctx.send('Stopping.......')
 			await msg.edit(content='Stopped!')
 			print('{} stopped this bot. - {}'.format(ctx.author.display_name,ctx.guild.name))
