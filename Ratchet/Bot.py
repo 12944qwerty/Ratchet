@@ -16,17 +16,16 @@ class Bot(c.Cog):
 	@c.group(invoke_without_command=True,name='info',aliases=['desc','botinfo'])
 	async def info(self,ctx):
 		"""Sends desc of bot"""
-		prefix = self.bot.crsr.execute('SELECT prefix FROM guilds WHERE guild_id=?',(ctx.guild.id,)).fetchone()
 		try:
-			await ctx.send('I am Ratchet. A fun bot. To see a list of commands, type in \'{0}helps\'.\n To report a bug, DM the owner. @12944qwerty#9317 or use `{0}report`'.format(prefix[0]))
-			await ctx.send('Subcommands:\n - `{0}info guilds`\n - `{0}info status`\n - `{0}info invite`\n - `{0}info ping`\n - `{0}info emojis`'.format(prefix[0]))
+			await ctx.send('I am Ratchet. A fun bot. To see a list of commands, type in \'\\helps\'.\n To report a bug, DM the owner. `12944qwerty#9317`')
+			await ctx.send('Subcommands:\n - `\\info guilds`\n - `\\info status`\n - `\\info invite`\n - `\\info ping`\n - `\\info emojis`')
 		except Exception as e:
 			print(e)
 	
 	@info.command(name='guilds')
 	async def guilds(self,ctx):
 		for guild in self.bot.guilds:
-			await ctx.send(guild.name)
+			await ctx.send(f'{guild.name} - {guild.id}')
 	
 	@info.command(name='emojis')
 	async def emojis(self,ctx):
@@ -38,7 +37,7 @@ class Bot(c.Cog):
 	
 	@info.command(name='status', aliases=['use','usage'])
 	async def status(self,ctx):
-		await ctx.send('__**_Status_**__ <:online:')
+		await ctx.send('__**_Status_**__ <:online:512174327899226123>')
 		await ctx.send('Server Count: {}'.format(len(self.bot.guilds)))
 		user = 0
 		for guild in self.bot.guilds:
@@ -54,10 +53,10 @@ class Bot(c.Cog):
 		my_media = d.Activity(name=media_title, type=p_types[ctx.invoked_with])
 		await self.bot.change_presence(activity=my_media)
 
-	@info.command(name='inv', aliases=['invite_link','invite'])
+	"""@info.command(name='inv', aliases=['invite_link','invite'])
 	async def inv(self,ctx):
-		"""Want this bot on your server?"""
-		await ctx.send('Hi! If you would like me to be on your server, please use this link:\n <https://discordapp.com/api/oauth2/authorize?client_id=549642567718010880&permissions=2146958839&scope=bot>')
+		Want this bot on your server?
+		await ctx.send('Hi! If you would like me to be on your server, please use this link:\n <https://discordapp.com/api/oauth2/authorize?client_id=549642567718010880&permissions=2146958839&scope=bot>')"""
 	
 	@c.guild_only()
 	@c.command(name='leave')
@@ -81,15 +80,8 @@ class Bot(c.Cog):
 			await ctx.send('You are not my owner.... OR an admin!!!!')
 
 	@c.command(name='report',aliases=['bug'])
-	async def report(self,ctx,*,bug:str):
-		msg = await ctx.send('Your message is being logged....')
-		from pendulum import instance as to_utc, timezone
-		tz = timezone('CST6CDT')
-		dt = tz.convert(to_utc(ctx.message.created_at))
-		date = dt.strftime('%a %d-%b-%Y')
-		async with open('bugs.txt','a') as log:
-			await log.write('\n\n{3} - {1} - {0.author} in {0.guild}'.format(ctx,bug,date))
-		await msg.edit(content='I have logged your bug!')
+	async def report(self,ctx):
+		await ctx.send('Please report any bugs or glitches with this bot to 12944qwerty#9317. :D\nIf you have any suggestions, feel free to talk there too.')
 
 	@info.command(name='ping')
 	async def ping(self,ctx):
@@ -99,7 +91,7 @@ class Bot(c.Cog):
 			em = d.Embed(title='Pong!:ping_pong:')
 			em.add_field(name='Latency',value=f'{round(self.bot.latency * 1000,1)}ms')
 			milis1 = datetime.datetime.now().timestamp()
-			em.add_field(name='Heartbeat:heartbeat:',value=f'{round((milis1-milis) * 1000,2)}ms')
+			em.add_field(name='Heartbeat:heartbeat:',value=f'{round((milis1-milis) * 1000000,2)}ms')
 			em.set_footer(text=self.bot.user.display_name, icon_url=self.bot.user.avatar_url)
 			msg = await ctx.send(embed=em)
 			milis2 = datetime.datetime.now().timestamp()
