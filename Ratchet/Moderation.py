@@ -34,10 +34,10 @@ class Moderation(c.Cog):
 		await ctx.send(embed=d.Embed(title=('purge'),description=('purged {} messages'.format(len(deleted)))
 		),delete_after=2.0)
 
-	"""@c.guild_only()
+	@c.guild_only()
 	@c.command(name='set_prefix',aliases=['change_prefix',])
 	async def set_prefix(self,ctx,prefix:str):
-		Sets prefix of guild!
+		"""Sets prefix of guild!"""
 		self.bot.crsr.execute('UPDATE guilds SET prefix=? WHERE guild_id=?',(prefix,ctx.guild.id))
 		self.bot.conn.commit()
 		self.bot.crsr.execute('SELECT prefix FROM guilds WHERE guild_id=?',(ctx.guild.id,))
@@ -55,8 +55,8 @@ class Moderation(c.Cog):
 	@c.guild_only()
 	@c.command(name='reset_prefix')
 	async def reset_prefix(self,ctx):
-		self.bot.crsr.execute('UPDATE guilds SET prefix=? WHERE guild_id=?', ('?R ',ctx.guild.id))
-		await ctx.send('Prefix has been reset to `?R `')"""
+		self.bot.crsr.execute('UPDATE guilds SET prefix=? WHERE guild_id=?', ('\',ctx.guild.id))
+		await ctx.send('Prefix has been reset to `\`')
 
 def setup(bot):
     bot.add_cog(Moderation(bot))
