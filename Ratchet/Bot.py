@@ -69,7 +69,7 @@ class Bot(c.Cog):
 	@c.command(name='stop')
 	async def stop(self,ctx):
 		"""Stop the bot. ONLY ADMINS CAN DO SO (and owner)"""
-		if ctx.author.id == 499400512559382538 or ctx.author.permissions.administrator:
+		if ctx.author.id == 499400512559382538:
 			msg = await ctx.send('Stopping.......')
 			await msg.edit(content='Stopped!')
 			print('{} stopped this bot. - {}'.format(ctx.author.display_name,ctx.guild.name))
