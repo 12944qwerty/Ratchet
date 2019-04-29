@@ -53,10 +53,10 @@ class Bot(c.Cog):
 		my_media = d.Activity(name=media_title, type=p_types[ctx.invoked_with])
 		await self.bot.change_presence(activity=my_media)
 
-	"""@info.command(name='inv', aliases=['invite_link','invite'])
+	@info.command(name='inv', aliases=['invite_link','invite'])
 	async def inv(self,ctx):
 		Want this bot on your server?
-		await ctx.send('Hi! If you would like me to be on your server, please use this link:\n <https://discordapp.com/api/oauth2/authorize?client_id=549642567718010880&permissions=2146958839&scope=bot>')"""
+		await ctx.send('Hi! If you would like me to be on your server, please use this link:\n <https://discordapp.com/api/oauth2/authorize?client_id=549642567718010880&permissions=2146958839&scope=bot>')
 	
 	@c.guild_only()
 	@c.command(name='leave')
