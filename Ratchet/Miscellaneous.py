@@ -8,6 +8,8 @@ import os
 from random import randint
 import asyncio as a
 import sqlite3 as sql
+import requests
+import re
 
 class MyHelpCommand(c.MinimalHelpCommand):
 	def get_command_signature(self, command):
@@ -23,10 +25,45 @@ class Miscellaneous(c.Cog):
 	def cog_unload(self):
 		self.bot.help_command = self._original_help_command
 	
-	@c.guild_only()
+	@c.group(invoke_without_command=True,name='scratch')
+	async def scratch(self,ctx,user=None):
+		prefix = '&'
+		message = ['Hi! This is a small command set where you can look for: ```',f'{prefix}scratch [messages|messagecount] <user>',f'{prefix}scratch followers <user>```']
+		await ctx.send('\n'.join(message))
+	
+	@scratch.command(name='messagecount',aliases=['messages'])
+	async def messagecount(self,ctx,user=None):
+		if user == None:
+			user = ctx.author.display_name
+		try:
+			messages = requests.get('https://api.scratch.mit.edu/users/{}/messages/count'.format(user))
+			self.messages = messages.json()['count']
+			em = d.Embed(title=f'{user}',description=f'{self.messages} messages on [scratch](https://scratch.mit.edu)')
+			await ctx.send(embed=em)
+		except KeyError:
+			await ctx.send('This user could not be found. :(')
+	
+	@scratch.command(name='followers')
+	async def followers(self,ctx,user=None):
+		"""get the followers the user has"""
+		if user == None:
+			user = ctx.author.display_name
+		
+		try:
+			followers = int(re.search(r'Followers \(([0-9]+)\)', requests.get(f'https://scratch.mit.edu/users/{user}/followers').text, re.I).group(1))
+			if user == 'griffpatch' or user == 'Will_Wam' or user == 'WazzoTV':
+				until = 100000 - followers
+				em = d.Embed(title=f'{user}',description=f'{followers} on [scratch](https://scratch.mit.edu/users/{user}/followers)\n{until} more until 100,000')
+			else:
+				em = d.Embed(title=f'{user}',description=f'{followers} on [scratch](https://scratch.mit.edu/users/{user}/followers)')
+			await ctx.send(embed=em)
+		except AttributeError:
+			await ctx.send('This user could not be')
+
+	"""@c.guild_only()
 	@c.command(name='leaderboard',aliases=['lb'])
 	async def leaderboard(self,ctx):
-		"""Leaderboard of guild"""
+		Leaderboard of guild
 		lb = {}
 		self.bot.conn.commit()
 		self.bot.crsr.execute('SELECT user_id , xp FROM users WHERE guild_id=?', (ctx.guild.id,))
@@ -67,7 +104,7 @@ class Miscellaneous(c.Cog):
 			work = randint(30,70)
 		self.bot.crsr.execute('UPDATE users SET xp=? WHERE user_id=? AND guild_id=?',((xp + work),ctx.author.id,ctx.guild.id))
 		self.bot.conn.commit()
-		await ctx.send(f'You earned {work} xp')
+		await ctx.send(f'You earned {work} xp')"""
 
 def setup(bot):
 	bot.add_cog(Miscellaneous(bot))
