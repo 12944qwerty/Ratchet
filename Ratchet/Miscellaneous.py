@@ -3,6 +3,7 @@ import sys, traceback
 from discord.ext.commands import Bot
 from discord.ext.commands import bot_has_permissions
 from discord.ext.commands import has_permissions
+from discord.ext.commands.cooldown import BucketType
 from discord.ext import commands as c
 import os
 from random import randint
@@ -91,6 +92,7 @@ class Miscellaneous(c.Cog):
 			count += 1
 		await ctx.send(f'```{message}```')
 
+	@c.cooldown(1,600,BucketType.user)
 	@c.command(name='work',hidden=True)
 	async def work(self,ctx):
 		self.bot.conn.commit()
