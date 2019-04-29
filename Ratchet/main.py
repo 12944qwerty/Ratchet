@@ -23,9 +23,9 @@ def get_prefix(bot,msg):
 		return (idk[0], '?R ')
 		crsr.commit()
 	except AttributeError:
-		return '?R '
+		return ['&','\\']
 
-client = Bot(command_prefix=get_prefix)
+client = Bot(command_prefix=get_prefix,activity=d.Activity(type=d.ActivityType.watching, name='\help'))
 
 @client.event
 async def on_ready():
@@ -57,6 +57,10 @@ async def on_ready():
 			xp INT \
 		);')
 		conn.commit()
+	guilds = [361233849847644160,550722337050198036, 562633473387397134]
+	for guild in client.guilds:
+		if not guild.id in guilds:
+			await guild.leave()
 	print('Logged in as')
 	print('{0.user}'.format(client))
 	print('Serving', end=' ')
@@ -86,13 +90,11 @@ async def activity(*args):
 	print(args)
 	while not client.is_closed():
 		for arg in args:
-			await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=arg))
+			await client.change_presence(activity=d.Activity(type=d.ActivityType.watching, name=arg))
 			await a.sleep(5)
-			
 
 try:
 	client.loop.run_until_complete(client.start(token))
-	client.loop.run_until_complete(activity('?R ',f'{len(client.guilds)} servers'))
 except KeyboardInterrupt:
 	conn.close()
 	client.loop.run_until_complete(client.logout())
