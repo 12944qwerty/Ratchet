@@ -60,10 +60,10 @@ class Miscellaneous(c.Cog):
 		except AttributeError:
 			await ctx.send('This user could not be')
 
-	"""@c.guild_only()
+	@c.guild_only()
 	@c.command(name='leaderboard',aliases=['lb'])
 	async def leaderboard(self,ctx):
-		Leaderboard of guild
+		"""Leaderboard of guild"""
 		lb = {}
 		self.bot.conn.commit()
 		self.bot.crsr.execute('SELECT user_id , xp FROM users WHERE guild_id=?', (ctx.guild.id,))
@@ -104,7 +104,7 @@ class Miscellaneous(c.Cog):
 			work = randint(30,70)
 		self.bot.crsr.execute('UPDATE users SET xp=? WHERE user_id=? AND guild_id=?',((xp + work),ctx.author.id,ctx.guild.id))
 		self.bot.conn.commit()
-		await ctx.send(f'You earned {work} xp')"""
+		await ctx.send(f'You earned {work} xp')
 
 def setup(bot):
 	bot.add_cog(Miscellaneous(bot))
