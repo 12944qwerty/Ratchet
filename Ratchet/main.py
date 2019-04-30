@@ -12,8 +12,6 @@ import sqlite3 as sql
 conn = sql.connect('Ratchet.db')
 crsr = conn.cursor()
 
-token = os.environ.get('TOKEN')
-
 def get_prefix(bot,msg):
 	try:
 		crsr.execute('SELECT prefix FROM guilds WHERE guild_id=?',(msg.guild.id,))
@@ -92,6 +90,9 @@ async def activity(*args):
 		for arg in args:
 			await client.change_presence(activity=d.Activity(type=d.ActivityType.watching, name=arg))
 			await a.sleep(5)
+
+with open('login.txt') as f:
+    token = f.readline().strip()
 
 try:
 	client.loop.run_until_complete(client.start(token))
