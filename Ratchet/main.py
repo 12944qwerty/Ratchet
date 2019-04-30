@@ -66,7 +66,7 @@ async def on_ready():
 	print('Serving', end=' ')
 	print('{} server(s)'.format(len(client.guilds)))
 
-cogs = ['Bot','Moderation','Miscellaneous','Games','jishaku']
+cogs = ['Bot','Moderation','Miscellaneous','Games','jishaku','errorhandler']
 
 @client.event
 async def on_message(message):
