@@ -17,13 +17,13 @@ def get_prefix(bot,msg):
 		crsr.execute('SELECT prefix FROM guilds WHERE guild_id=?',(msg.guild.id,))
 		idk = crsr.fetchone()
 		if idk is None or idk[0] is None:
-			return '?R '
-		return (idk[0], '?R ')
+			return '\\'
+		return (idk[0], '\\')
 		crsr.commit()
 	except AttributeError:
 		return ['&','\\']
 
-client = Bot(command_prefix=get_prefix,activity=d.Activity(type=d.ActivityType.watching, name='\help'))
+client = Bot(command_prefix=get_prefix,activity=d.Activity(type=d.ActivityType.watching, name='\\help'))
 
 client.crsr = crsr
 client.conn = conn
@@ -48,7 +48,7 @@ async def on_ready():
 	);')
 	conn.commit
 	for guild in client.guilds:
-		crsr.execute('INSERT INTO guilds (guild_id, prefix) VALUES (?, ?)', (guild.id, '?R '))
+		crsr.execute('INSERT INTO guilds (guild_id, prefix) VALUES (?, ?)', (guild.id, '\\'))
 		conn.commit
 	crsr.execute('UPDATE guilds SET prefix=? WHERE guild_id=?',('&',550722337050198036))
 	crsr.execute('CREATE TABLE users ( \
