@@ -32,32 +32,31 @@ client.conn = conn
 async def on_ready():
 	for cog in cogs:
 		client.load_extension(cog)
-	if input('reset tables? ') == 'y':
-		try:
-			crsr.execute('DROP TABLE guilds;')
-			conn.commit
-		except sql.OperationalError:
-			pass
-		try:
-			crsr.execute('DROP TABLE users;')
-			conn.commit
-		except sql.OperationalError:
-			pass
-		crsr.execute('CREATE TABLE guilds ( \
-			guild_id UNSIGNED BIG integer NOT NULL, \
-			prefix string \
-		);')
+	try:
+		crsr.execute('DROP TABLE guilds;')
 		conn.commit
-		for guild in client.guilds:
-			crsr.execute('INSERT INTO guilds (guild_id, prefix) VALUES (?, ?)', (guild.id, '?R '))
-			conn.commit
-		crsr.execute('UPDATE guilds SET prefix=? WHERE guild_id=?',('&',550722337050198036))
-		crsr.execute('CREATE TABLE users ( \
-			guild_id UNSIGNED BIG INT, \
-			user_id UNSIGNED BIG INT, \
-			xp INT \
-		);')
-		conn.commit()
+	except sql.OperationalError:
+		pass
+	try:
+		crsr.execute('DROP TABLE users;')
+		conn.commit
+	except sql.OperationalError:
+		pass
+	crsr.execute('CREATE TABLE guilds ( \
+		guild_id UNSIGNED BIG integer NOT NULL, \
+		prefix string \
+	);')
+	conn.commit
+	for guild in client.guilds:
+		crsr.execute('INSERT INTO guilds (guild_id, prefix) VALUES (?, ?)', (guild.id, '?R '))
+		conn.commit
+	crsr.execute('UPDATE guilds SET prefix=? WHERE guild_id=?',('&',550722337050198036))
+	crsr.execute('CREATE TABLE users ( \
+		guild_id UNSIGNED BIG INT, \
+		user_id UNSIGNED BIG INT, \
+		xp INT \
+	);')
+	conn.commit()
 	guilds = [361233849847644160,550722337050198036, 562633473387397134]
 	for guild in client.guilds:
 		if not guild.id in guilds:
