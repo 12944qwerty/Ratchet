@@ -17,9 +17,9 @@ class CommandErrorHandler(commands.Cog):
 			return
 
 		ignored = (commands.CommandNotFound, commands.UserInputError)
-        
+
 		error = getattr(error, 'original', error)
-        
+
 		if isinstance(error, ignored):
 			return
 
@@ -34,9 +34,9 @@ class CommandErrorHandler(commands.Cog):
 
 		elif isinstance(error, commands.BadArgument):
 			return await ctx.send('Error: Bad Argument')
-		
+
 		elif isinstance(error, commands.CommandOnCooldown):
-			return await ctx.send(f'Please wait for another {retry_after}')
+			return await ctx.send(f'Please wait for another {round(error.retry_after,1)} secs')
 
 def setup(bot):
 	bot.add_cog(CommandErrorHandler(bot))

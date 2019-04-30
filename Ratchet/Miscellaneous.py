@@ -3,7 +3,7 @@ import sys, traceback
 from discord.ext.commands import Bot
 from discord.ext.commands import bot_has_permissions
 from discord.ext.commands import has_permissions
-from discord.ext.commands.cooldown import BucketType
+from discord.ext.commands.cooldowns import BucketType
 from discord.ext import commands as c
 import os
 from random import randint
@@ -25,7 +25,7 @@ class Miscellaneous(c.Cog):
 
 	def cog_unload(self):
 		self.bot.help_command = self._original_help_command
-	
+
 	@c.group(invoke_without_command=True,name='scratch')
 	async def scratch(self,ctx,user:str):
 		messages = self.messages(user)
@@ -33,12 +33,12 @@ class Miscellaneous(c.Cog):
 		message = [f'**{user}**',f'**Messages:** {messages}',f'**Followers:** {followers}']
 		em = d.Embed(title=message[0],description=f'{message[1]}\n{message[2]}')
 		await ctx.send(embed=em)
-	
+
 	def messages(self,user):
 		messages = requests.get('https://api.scratch.mit.edu/users/{}/messages/count'.format(user))
 		self.messages = messages.json()['count']
 		return f'{self.messages} messages on [scratch](https://scratch.mit.edu)'
-	
+
 	def followers(self,user):
 		followers = int(re.search(r'Followers \(([0-9]+)\)', requests.get(f'https://scratch.mit.edu/users/{user}/followers').text, re.I).group(1))
 		if user == 'griffpatch' or user == 'Will_Wam' or user == 'WazzoTV':
@@ -79,7 +79,7 @@ class Miscellaneous(c.Cog):
 		await ctx.send(f'```{message}```')
 
 	@c.cooldown(1,600,BucketType.user)
-	@c.command(name='work',hidden=True)
+	@c.command(name='work')
 	async def work(self,ctx):
 		self.bot.conn.commit()
 		self.bot.crsr.execute(' \
