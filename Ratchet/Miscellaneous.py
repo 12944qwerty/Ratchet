@@ -27,39 +27,25 @@ class Miscellaneous(c.Cog):
 		self.bot.help_command = self._original_help_command
 	
 	@c.group(invoke_without_command=True,name='scratch')
-	async def scratch(self,ctx,user=None):
-		prefix = '&'
-		message = ['Hi! This is a small command set where you can look for: ```',f'{prefix}scratch [messages|messagecount] <user>',f'{prefix}scratch followers <user>```']
-		await ctx.send('\n'.join(message))
+	async def scratch(self,ctx,user:str):
+		messages = self.messages(user)
+		followers = self.followers(user)
+		message = [f'**{user}**',f'**Messages:** {messages}',f'**Followers:** {followers}']
+		em = d.Embed(title=message[0],description=f'{message[1]}\n{message[2]}')
+		await ctx.send(embed=em)
 	
-	@scratch.command(name='messagecount',aliases=['messages'])
-	async def messagecount(self,ctx,user=None):
-		if user == None:
-			user = ctx.author.display_name
-		try:
-			messages = requests.get('https://api.scratch.mit.edu/users/{}/messages/count'.format(user))
-			self.messages = messages.json()['count']
-			em = d.Embed(title=f'{user}',description=f'{self.messages} messages on [scratch](https://scratch.mit.edu)')
-			await ctx.send(embed=em)
-		except KeyError:
-			await ctx.send('This user could not be found. :(')
+	def messages(self,user):
+		messages = requests.get('https://api.scratch.mit.edu/users/{}/messages/count'.format(user))
+		self.messages = messages.json()['count']
+		return f'{self.messages} messages on [scratch](https://scratch.mit.edu)'
 	
-	@scratch.command(name='followers')
-	async def followers(self,ctx,user=None):
-		"""get the followers the user has"""
-		if user == None:
-			user = ctx.author.display_name
-		
-		try:
-			followers = int(re.search(r'Followers \(([0-9]+)\)', requests.get(f'https://scratch.mit.edu/users/{user}/followers').text, re.I).group(1))
-			if user == 'griffpatch' or user == 'Will_Wam' or user == 'WazzoTV':
-				until = 100000 - followers
-				em = d.Embed(title=f'{user}',description=f'{followers} on [scratch](https://scratch.mit.edu/users/{user}/followers)\n{until} more until 100,000')
-			else:
-				em = d.Embed(title=f'{user}',description=f'{followers} on [scratch](https://scratch.mit.edu/users/{user}/followers)')
-			await ctx.send(embed=em)
-		except AttributeError:
-			await ctx.send('This user could not be')
+	def followers(self,user):
+		followers = int(re.search(r'Followers \(([0-9]+)\)', requests.get(f'https://scratch.mit.edu/users/{user}/followers').text, re.I).group(1))
+		if user == 'griffpatch' or user == 'Will_Wam' or user == 'WazzoTV':
+			until = 100000 - followers
+			return f'{followers} on [scratch](https://scratch.mit.edu/users/{user}/followers)\n{until} more until 100,000'
+		else:
+			return f'{followers} on [scratch](https://scratch.mit.edu/users/{user}/followers)'
 
 	@c.guild_only()
 	@c.command(name='leaderboard',aliases=['lb'])
