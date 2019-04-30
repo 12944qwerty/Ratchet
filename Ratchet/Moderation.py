@@ -12,7 +12,7 @@ import sqlite3 as sql
 class Moderation(c.Cog):
 	def __init__(self,client):
 		self.bot = client
-	
+
 	@c.guild_only()
 	@c.command()
 	@has_permissions(manage_messages=True, read_message_history=True)
@@ -43,7 +43,7 @@ class Moderation(c.Cog):
 		self.bot.crsr.execute('SELECT prefix FROM guilds WHERE guild_id=?',(ctx.guild.id,))
 		prefix = self.bot.crsr.fetchone()[0]
 		await ctx.send(f'Prefix changed to {prefix}')
-	
+
 	@c.guild_only()
 	@c.command(name='prefix',aliases=['pre'])
 	async def prefix(self,ctx):
@@ -51,12 +51,12 @@ class Moderation(c.Cog):
 			FROM guilds \
 			WHERE guild_id=?', (ctx.guild.id,))
 		await ctx.send(f'Prefix is currently {pre}')
-	
+
 	@c.guild_only()
 	@c.command(name='reset_prefix')
 	async def reset_prefix(self,ctx):
-		self.bot.crsr.execute('UPDATE guilds SET prefix=? WHERE guild_id=?', ('\',ctx.guild.id))
-		await ctx.send('Prefix has been reset to `\`')
+		self.bot.crsr.execute('UPDATE guilds SET prefix=? WHERE guild_id=?', ('\\',ctx.guild.id))
+		await ctx.send('Prefix has been reset to `\\`')
 
 def setup(bot):
     bot.add_cog(Moderation(bot))
