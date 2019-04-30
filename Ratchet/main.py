@@ -12,7 +12,7 @@ import sqlite3 as sql
 conn = sql.connect('Ratchet.db')
 crsr = conn.cursor()
 
-token = os.environ.get('TOKEN')
+token = os.environ.get('TOKEN').strip()
 
 def get_prefix(bot,msg):
 	try:
@@ -69,7 +69,7 @@ async def on_ready():
 client.crsr = crsr
 client.conn = conn
 cogs = ['Bot','Moderation','Miscellaneous','Games','jishaku']
-	
+
 @client.event
 async def on_message(message):
 	if not message.author.bot:
