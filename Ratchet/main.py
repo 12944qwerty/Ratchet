@@ -30,7 +30,7 @@ client.conn = conn
 
 @client.event
 async def on_ready():
-	for cog in cogs:
+	"""for cog in cogs:
 		client.load_extension(cog)
 	try:
 		crsr.execute('DROP TABLE guilds;')
@@ -56,11 +56,7 @@ async def on_ready():
 		user_id UNSIGNED BIG INT, \
 		xp INT \
 	);')
-	conn.commit()
-	guilds = [361233849847644160,550722337050198036, 562633473387397134]
-	for guild in client.guilds:
-		if not guild.id in guilds:
-			await guild.leave()
+	conn.commit()"""
 	print('Logged in as')
 	print('{0.user}'.format(client))
 	print('Serving', end=' ')
