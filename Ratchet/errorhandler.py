@@ -36,8 +36,12 @@ class CommandErrorHandler(commands.Cog):
 			return await ctx.send('Error: Bad Argument')
 
 		elif isinstance(error, commands.CommandOnCooldown):
-			min = round(round(error.retry_after,0)/60,0))
-			sec = round(error.retry_after,0) % 60
+			after = error.retry_after
+			min = -1
+			while after >= 0:
+				min += 1
+				after -= 60
+			sec = int(round(after,0) % 60)
 			return await ctx.send(f'Please wait another {min} minutes and {sec} secs')
 
 def setup(bot):

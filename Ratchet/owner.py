@@ -33,11 +33,11 @@ class Owner(commands.Cog):
     @commands.command(name='stop',hidden=True)
     @commands.is_owner()
 	async def stop(self,ctx):
-		"""Stop the bot. ONLY ADMINS CAN DO SO (and owner)"""
-    msg = await ctx.send('Stopping.......')
-    await msg.edit(content='Stopped!')
-    print('{} stopped this bot. - {}'.format(ctx.author.display_name,ctx.guild.name))
-    self.bot.loop.run_until_complete(self.bot.logout())
+        """Stop the bot. ONLY ADMINS CAN DO SO (and owner)"""
+        msg = await ctx.send('Stopping.......')
+        await msg.edit(content='Stopped!')
+        print('{} stopped this bot. - {}'.format(ctx.author.display_name,ctx.guild.name))
+        self.bot.loop.run_until_complete(self.bot.logout())
 
 def setup(bot):
     bot.add_cog(Owner(bot))
