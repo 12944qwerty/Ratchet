@@ -2,7 +2,6 @@ from discord.ext import commands
 
 
 class Owner(commands.Cog):
-
     def __init__(self, bot):
         self.bot = bot
 
@@ -10,7 +9,6 @@ class Owner(commands.Cog):
     @commands.is_owner()
     async def cog_unload(self, ctx, *, cog: str):
         """Command which Unloads a Module."""
-
         try:
             self.bot.unload_extension(cog)
         except Exception as e:
@@ -31,9 +29,9 @@ class Owner(commands.Cog):
             await ctx.send(f'**`ERROR:`** {type(e).__name__} - {e}')
         else:
             await ctx.send('**`SUCCESS`**')
-            
-  @commands.command(name='stop',hidden=True)
-  @commands.is_owner()
+
+    @commands.command(name='stop',hidden=True)
+    @commands.is_owner()
 	async def stop(self,ctx):
 		"""Stop the bot. ONLY ADMINS CAN DO SO (and owner)"""
     msg = await ctx.send('Stopping.......')

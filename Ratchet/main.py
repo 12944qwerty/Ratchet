@@ -29,9 +29,9 @@ client.conn = conn
 
 @client.event
 async def on_ready():
-	"""for cog in cogs:
+	for cog in cogs:
 		client.load_extension(cog)
-	try:
+	"""try:
 		crsr.execute('DROP TABLE guilds;')
 		conn.commit
 	except sql.OperationalError:
