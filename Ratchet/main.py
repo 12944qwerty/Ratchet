@@ -6,7 +6,6 @@ from discord.ext.commands import has_permissions
 from discord.ext import commands as c
 import os
 from random import randint
-import jishaku
 import sqlite3 as sql
 
 conn = sql.connect('Ratchet.db')
@@ -66,7 +65,7 @@ async def on_ready():
 	print('Serving', end=' ')
 	print('{} server(s)'.format(len(client.guilds)))
 
-cogs = ['Bot','Moderation','Miscellaneous','Games','jishaku','errorhandler']
+cogs = ['Bot','Moderation','Miscellaneous','Games','errorhandler','owner']
 
 @client.event
 async def on_message(message):
