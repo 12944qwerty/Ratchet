@@ -57,19 +57,6 @@ class Bot(c.Cog):
 			await ctx.send('Awww, why don\'t you want me???')
 			await ctx.guild.leave()
 
-	@c.command(name='stop')
-	async def stop(self,ctx):
-		"""Stop the bot. ONLY ADMINS CAN DO SO (and owner)"""
-		if ctx.author.id == 499400512559382538 or ctx.author.permissions.administrator:
-			msg = await ctx.send('Stopping.......')
-			await msg.edit(content='Stopped!')
-			print('{} stopped this bot. - {}'.format(ctx.author.display_name,ctx.guild.name))
-			conn.commit()
-			conn.close()
-			self.bot.loop.run_until_complete(self.bot.logout())
-		else:
-			await ctx.send('You are not my owner.... OR an admin!!!!')
-
 	@c.command(name='report',aliases=['bug'])
 	async def report(self,ctx):
 		await ctx.send('Please report any bugs or glitches with this bot to 12944qwerty#9317. :D\nIf you have any suggestions, feel free to talk there too.')
