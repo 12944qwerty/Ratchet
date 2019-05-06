@@ -21,7 +21,7 @@ class MyClient(Bot):
 		
 	async def on_ready(self):
 		for cog in cogs:
-			client.load_extension(cog)
+			self.load_extension(cog)
 		"""try:
 			crsr.execute('DROP TABLE guilds;')
 			conn.commit
@@ -37,7 +37,7 @@ class MyClient(Bot):
 			prefix string \
 		);')
 		conn.commit
-		for guild in client.guilds:
+		for guild in self.guilds:
 			crsr.execute('INSERT INTO guilds (guild_id, prefix) VALUES (?, ?)', (guild.id, '\\'))
 			conn.commit
 		crsr.execute('UPDATE guilds SET prefix=? WHERE guild_id=?',('&',550722337050198036))
@@ -48,9 +48,9 @@ class MyClient(Bot):
 		);')
 		conn.commit()"""
 		print('Logged in as')
-		print('{0.user}'.format(client))
+		print('{0.user}'.format(self))
 		print('Serving', end=' ')
-		print('{} server(s)'.format(len(client.guilds)))
+		print('{} server(s)'.format(len(self.guilds)))
 		
 	async def on_message(self,message):
 		if not message.author.bot:
@@ -65,7 +65,7 @@ class MyClient(Bot):
 				conn.commit()
 			except AttributeError:
 				pass
-		await client.process_commands(message)
+		await self.process_commands(message)
 		
 	async def griffpatch(self):
 		while not self.bot.is_closed():
@@ -76,9 +76,9 @@ class MyClient(Bot):
 			
 	async def activity(self):
 		while not self.bot.is_closed():
-			await client.change_presence(activity=d.Activity(type=d.ActivityType.watching, name='\\help'))
+			await self.change_presence(activity=d.Activity(type=d.ActivityType.watching, name='\\help'))
 			await asyncio.sleep(5)
-			await client.change_presence(activity=d.Activity(type=d.ActivityType.watching, name=f'{len(client.guilds)} servers'))
+			await self.change_presence(activity=d.Activity(type=d.ActivityType.watching, name=f'{len(self.guilds)} servers'))
 			await asyncio.sleep(5)
 
 def get_prefix(bot,msg):
