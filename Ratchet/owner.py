@@ -50,12 +50,8 @@ class Owner(c.Cog,command_attrs={'hidden':True}):
 				description=f'```{e}```'
 			)
 			await ctx.send(f'```\n{out.getvalue()}\n```',embed=em)
-		else:
-			em = d.Embed(
-				title='Success!',
-				description=f'```{ret!r}```'
-			)
-			await ctx.send(f'```\n{out.getvalue()}\n```',embed=em)
+	else:
+		await ctx.send(f'```\n{out.getvalue()}\n``` ```\n{ret!r}\n```')
 
 	async def cog_check(self, ctx):
         if not await ctx.bot.is_owner(ctx.author):
