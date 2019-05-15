@@ -1,41 +1,66 @@
-from discord.ext import commands
+import discord as d
+import discord.ext.commands as c
+from discord.ext.commands import bot_has_permissions
+from discord.ext.commands import has_permissions
+from io import StringIO
+from contextlib import redirect_stdout
 
+class Owner(c.Cog,command_attrs={'hidden':True}):
+	def __init__(self,client):
+		self.bot = client
 
-class Owner(commands.Cog):
-	def __init__(self, bot):
-		self.bot = bot
-
-	@commands.command(name='unload', hidden=True)
-	@commands.is_owner()
-	async def cog_unload(self, ctx, *, cog: str):
-		"""Command which Unloads a Module."""
+	@c.command(name='reload',alias=['reload_cog'])
+	async def reload_(self,ctx,cog):
+		"""reload a cog"""
 		try:
-			self.bot.unload_extension(cog)
-		except Exception as e:
-			await ctx.send(f'**`ERROR:`** {type(e).__name__} - {e}')
+            self.bot.unload_extension(cog)
+            self.bot.load_extension(cog)
+        except Exception as e:
+            await ctx.send(f'**`ERROR:`** {type(e).__name__} - {e}')
+        else:
+            await ctx.send('**`SUCCESS`**')
+
+	@c.command(name='eval')
+	@c.is_owner()
+	async def eval_(self,ctx, *, arg:str):
+		env = {
+			'ctx':ctx,
+			'discord':d,
+			'commands':c,
+			'guild':ctx.guild,
+			'channel':ctx.channel,
+			'client':self.bot
+		}
+		out = StringIO()
+		arg = arg.strip('`').rstrip().lstrip('\n').splitlines()
+		indent = '    '
+		for line in arg:
+			strp = line.lstrip()
+			if strp != line:
+				indent = line[:len(line) - len(strp)]
+				break
+		arg = ''.join(indent + line + '\n' for line in arg)
+		try:
+			with redirect_stdout(out):
+				exec(f"async def func():\n{arg}", env)
+				ret = await env['func']()
+		except BaseException as e:
+			em = d.Embed(
+				title='error',
+				description=f'```{e}```'
+			)
+			await ctx.send(f'```\n{out.getvalue()}\n```',embed=em)
 		else:
-			await ctx.send('**`SUCCESS`**')
+			em = d.Embed(
+				title='Success!',
+				description=f'```{ret!r}```'
+			)
+			await ctx.send(f'```\n{out.getvalue()}\n```',embed=em)
 
-	@commands.command(name='reload', hidden=True)
-	@commands.is_owner()
-	async def cog_reload(self, ctx, *, cog: str):
-		"""Command which Reloads a Module."""
-		try:
-			self.bot.unload_extension(cog)
-			self.bot.load_extension(cog)
-		except Exception as e:
-			await ctx.send(f'**`ERROR:`** {type(e).__name__} - {e}')
-			else:
-				await ctx.send('**`SUCCESS`**')
-
-	@commands.command(name='stop',hidden=True)
-	@commands.is_owner()
-	async def stop(self,ctx):
-		"""Stop the bot. ONLY ADMINS CAN DO SO (and owner)"""
-		msg = await ctx.send('Stopping.......')
-		await msg.edit(content='Stopped!')
-		print('{} stopped this bot. - {}'.format(ctx.author.display_name,ctx.guild.name))
-		self.bot.loop.run_until_complete(self.bot.logout())
+	async def cog_check(self, ctx):
+        if not await ctx.bot.is_owner(ctx.author):
+            await ctx.send('You need to own this bot. Which only 12944qwerty#9317 does.')
+        return True
 
 def setup(bot):
 	bot.add_cog(Owner(bot))
