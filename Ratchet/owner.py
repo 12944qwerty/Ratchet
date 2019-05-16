@@ -1,15 +1,15 @@
-import discord as d
-import discord.ext.commands as c
+import discord
+import discord.ext.commands
 from discord.ext.commands import bot_has_permissions
 from discord.ext.commands import has_permissions
 from io import StringIO
 from contextlib import redirect_stdout
 
-class Owner(c.Cog,command_attrs={'hidden':True}):
+class Owner(commands.Cog,command_attrs={'hidden':True}):
 	def __init__(self,client):
 		self.bot = client
 
-	@c.command(name='reload',alias=['reload_cog'])
+	@commands.command(name='reload',alias=['reload_cog'])
 	async def reload_(self,ctx,cog):
 		"""reload a cog"""
 		try:
@@ -20,16 +20,18 @@ class Owner(c.Cog,command_attrs={'hidden':True}):
         else:
             await ctx.send('**`SUCCESS`**')
 
-	@c.command(name='eval')
-	@c.is_owner()
-	async def eval_(self,ctx, *, arg:str):
+	@client.command(name='eval')
+	@commands.is_owner()
+	async def eval_(ctx, *, arg:str):
+		await ctx.message.add_reaction(chr(0x25b6))
 		env = {
 			'ctx':ctx,
-			'discord':d,
-			'commands':c,
+			'discord':discord,
+			'commands':commands,
 			'guild':ctx.guild,
 			'channel':ctx.channel,
-			'client':self.bot
+			'client':client,
+			'message':ctx.message.content
 		}
 		out = StringIO()
 		arg = arg.strip('`').rstrip().lstrip('\n').splitlines()
@@ -45,13 +47,15 @@ class Owner(c.Cog,command_attrs={'hidden':True}):
 				exec(f"async def func():\n{arg}", env)
 				ret = await env['func']()
 		except BaseException as e:
+			await ctx.message.add_reaction('\U0000203c')
 			em = d.Embed(
 				title='error',
 				description=f'```{e}```'
 			)
-			await ctx.send(f'```\n{out.getvalue()}\n```',embed=em)
-	else:
-		await ctx.send(f'```\n{out.getvalue()}\n``` ```\n{ret!r}\n```')
+			await ctx.send(f'```\n{out.getvalue()}\n``` ```\n{ret!r}\n```',embed=em)
+		else:
+			await ctx.message.add_reaction('\U00002705')
+			await ctx.send(f'```\n{out.getvalue()}\n``` ```\n{ret!r}\n```')
 
 	async def cog_check(self, ctx):
         if not await ctx.bot.is_owner(ctx.author):
