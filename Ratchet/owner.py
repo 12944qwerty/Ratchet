@@ -20,9 +20,9 @@ class Owner(commands.Cog,command_attrs={'hidden':True}):
         else:
             await ctx.send('**`SUCCESS`**')
 
-	@client.command(name='eval')
+	@commands.command(name='eval')
 	@commands.is_owner()
-	async def eval_(ctx, *, arg:str):
+	async def eval_(self,ctx, *, arg:str):
 		await ctx.message.add_reaction(chr(0x25b6))
 		env = {
 			'ctx':ctx,
@@ -30,7 +30,7 @@ class Owner(commands.Cog,command_attrs={'hidden':True}):
 			'commands':commands,
 			'guild':ctx.guild,
 			'channel':ctx.channel,
-			'client':client,
+			'client':self.bot,
 			'message':ctx.message.content
 		}
 		out = StringIO()
@@ -48,14 +48,35 @@ class Owner(commands.Cog,command_attrs={'hidden':True}):
 				ret = await env['func']()
 		except BaseException as e:
 			await ctx.message.add_reaction('\U0000203c')
-			em = d.Embed(
-				title='error',
-				description=f'```{e}```'
+			em = discord.Embed(
+				title='EVALUATED'
 			)
-			await ctx.send(f'```\n{out.getvalue()}\n``` ```\n{ret!r}\n```',embed=em)
+			em.add_field(
+				name='CONSOLE',
+				value=f'```{out.getvalue()}```'
+			)
+			em.add_field(
+				name='RETURN',
+				value=f'```{ret!r}```'
+			)
+			em.add_field(
+				name='ERROR',
+				value=f'```{e}```'
+			)
 		else:
+			em = discord.Embed(
+				title='EVALUATED'
+			)
+			em.add_field(
+				name='CONSOLE',
+				value=f'```{out.getvalue()}```'
+			)
+			em.add_field(
+				name='RETURN',
+				value=f'```{ret!r}```'
+			)
 			await ctx.message.add_reaction('\U00002705')
-			await ctx.send(f'```\n{out.getvalue()}\n``` ```\n{ret!r}\n```')
+		await ctx.send(embed=em)
 
 	async def cog_check(self, ctx):
         if not await ctx.bot.is_owner(ctx.author):
